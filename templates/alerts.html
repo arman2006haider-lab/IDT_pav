@@ -1,0 +1,151 @@
+{% extends "base.html" %}
+{% block title %}Alerts{% endblock %}
+
+{% block content %}
+<div class="page">
+  <div class="page-header">
+    <h1 data-en="Alerts & SMS Notifications" data-kn="ಎಚ್ಚರಿಕೆಗಳು ಮತ್ತು SMS ಅಧಿಸೂಚನೆಗಳು">Alerts & SMS Notifications</h1>
+    <p class="sub" data-en="Twilio SMS templates dispatched to farmers based on threat level escalation" data-kn="ಅಪಾಯ ಮಟ್ಟದ ಆಧಾರದ ಮೇಲೆ ರೈತರಿಗೆ ಕಳುಹಿಸಲಾದ Twilio SMS ಟೆಂಪ್ಲೇಟ್‌ಗಳು">Twilio SMS templates dispatched to farmers based on threat level escalation</p>
+  </div>
+
+  <!-- SMS Previews -->
+  <div class="grid-3" style="margin-bottom:1.5rem;">
+    <!-- HIGH -->
+    <div class="card" style="border-top:3px solid var(--danger);">
+      <div class="card-title" style="color:var(--danger);" data-en="🔴 HIGH THREAT — SMS Template" data-kn="🔴 ಅಧಿಕ ಅಪಾಯ — SMS ಟೆಂಪ್ಲೇಟ್">🔴 HIGH THREAT — SMS Template</div>
+      <div style="background:#1a1a1a;border-radius:10px;padding:1rem;margin-top:0.75rem;font-family:var(--mono);font-size:0.75rem;color:#f0f0f0;line-height:1.7;position:relative;">
+        <div style="position:absolute;top:8px;right:10px;font-size:0.65rem;color:#888;">Twilio · Delivered ✓</div>
+        <div style="color:#ef4444;font-weight:700;margin-bottom:0.4rem;">⚠️ WILDGUARD URGENT</div>
+        <div id="sms-high" data-en="🐘 ELEPHANT detected near your farm boundary!
+📍 North Fence — 14:32:07
+🔊 Alarm activated
+📞 Forest Dept. alerted
+Reply STOP to unsubscribe" data-kn="🐘 ಆನೆ ನಿಮ್ಮ ತೋಟದ ಗಡಿ ಬಳಿ ಕಾಣಿಸಿಕೊಂಡಿದೆ!
+📍 ಉತ್ತರ ತಡೆ — 14:32:07
+🔊 ಅಲಾರಂ ಸಕ್ರಿಯಗೊಂಡಿದೆ
+📞 ಅರಣ್ಯ ಇಲಾಖೆ ಎಚ್ಚರಿಸಲಾಗಿದೆ
+ನಿಲ್ಲಿಸಲು STOP ಎಂದು ರಿಪ್ಲೈ ಮಾಡಿ">🐘 ELEPHANT detected near your farm boundary!
+📍 North Fence — 14:32:07
+🔊 Alarm activated
+📞 Forest Dept. alerted
+Reply STOP to unsubscribe</div>
+      </div>
+      <button class="btn-sim" style="width:100%;justify-content:center;margin-top:0.75rem;background:#fce8e6;color:var(--danger);border-color:#f5c5c0;" onclick="showToast('📱 HIGH threat SMS preview triggered!','🔴')">
+        <span data-en="Preview High Threat SMS" data-kn="ಅಧಿಕ ಅಪಾಯ SMS ಪೂರ್ವವೀಕ್ಷಣೆ">Preview High Threat SMS</span>
+      </button>
+    </div>
+
+    <!-- MEDIUM -->
+    <div class="card" style="border-top:3px solid var(--amber);">
+      <div class="card-title" style="color:#b8620a;" data-en="🟡 MEDIUM THREAT — SMS Template" data-kn="🟡 ಮಧ್ಯಮ ಅಪಾಯ — SMS ಟೆಂಪ್ಲೇಟ್">🟡 MEDIUM THREAT — SMS Template</div>
+      <div style="background:#1a1a1a;border-radius:10px;padding:1rem;margin-top:0.75rem;font-family:var(--mono);font-size:0.75rem;color:#f0f0f0;line-height:1.7;position:relative;">
+        <div style="position:absolute;top:8px;right:10px;font-size:0.65rem;color:#888;">Twilio · Delivered ✓</div>
+        <div style="color:#eab308;font-weight:700;margin-bottom:0.4rem;">⚡ WILDGUARD ALERT</div>
+        <div id="sms-medium" data-en="🐗 WILD BOAR spotted near crops!
+📍 Crop Field A — 15:10:22
+🔊 Deterrent activated
+AI Confidence: 88%
+Stay alert." data-kn="🐗 ಕಾಡು ಹಂದಿ ಬೆಳೆ ಬಳಿ ಕಾಣಿಸಿಕೊಂಡಿದೆ!
+📍 ಬೆಳೆ ಕ್ಷೇತ್ರ A — 15:10:22
+🔊 ತಡೆ ಸಕ್ರಿಯ
+AI ಖಚಿತತೆ: 88%
+ಎಚ್ಚರಿಕೆಯಿಂದಿರಿ.">🐗 WILD BOAR spotted near crops!
+📍 Crop Field A — 15:10:22
+🔊 Deterrent activated
+AI Confidence: 88%
+Stay alert.</div>
+      </div>
+      <button class="btn-sim" style="width:100%;justify-content:center;margin-top:0.75rem;background:#fef3e2;color:#b8620a;border-color:#f5d89a;" onclick="showToast('📱 MEDIUM threat SMS preview triggered!','🟡')">
+        <span data-en="Preview Medium Threat SMS" data-kn="ಮಧ್ಯಮ ಅಪಾಯ SMS ಪೂರ್ವವೀಕ್ಷಣೆ">Preview Medium Threat SMS</span>
+      </button>
+    </div>
+
+    <!-- LOW -->
+    <div class="card" style="border-top:3px solid var(--safe);">
+      <div class="card-title" style="color:var(--safe);" data-en="🟢 LOW THREAT — Log Entry" data-kn="🟢 ಕಡಿಮೆ ಅಪಾಯ — ದಾಖಲೆ">🟢 LOW THREAT — Log Entry</div>
+      <div style="background:#1a1a1a;border-radius:10px;padding:1rem;margin-top:0.75rem;font-family:var(--mono);font-size:0.75rem;color:#f0f0f0;line-height:1.7;position:relative;">
+        <div style="position:absolute;top:8px;right:10px;font-size:0.65rem;color:#888;">Log only · No SMS</div>
+        <div style="color:#4caf7d;font-weight:700;margin-bottom:0.4rem;">ℹ️ WILDGUARD LOG</div>
+        <div id="sms-low" data-en="🦌 Deer detected — low risk
+📍 East Gate — 16:45:10
+No deterrent needed.
+Logged to dashboard." data-kn="🦌 ಜಿಂಕೆ ಪತ್ತೆಯಾಗಿದೆ — ಕಡಿಮೆ ಅಪಾಯ
+📍 ಪೂರ್ವ ಗೇಟ್ — 16:45:10
+ತಡೆ ಅಗತ್ಯವಿಲ್ಲ.
+ಡ್ಯಾಶ್‌ಬೋರ್ಡ್‌ಗೆ ದಾಖಲಿಸಲಾಗಿದೆ.">🦌 Deer detected — low risk
+📍 East Gate — 16:45:10
+No deterrent needed.
+Logged to dashboard.</div>
+      </div>
+      <button class="btn-sim" style="width:100%;justify-content:center;margin-top:0.75rem;background:#e6f4ec;color:var(--safe);border-color:#b0dfc0;" onclick="showToast('📋 LOW threat — logged only, no SMS sent.','🟢')">
+        <span data-en="Preview Low Threat Log" data-kn="ಕಡಿಮೆ ಅಪಾಯ ದಾಖಲೆ ಪೂರ್ವವೀಕ್ಷಣೆ">Preview Low Threat Log</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Deterrent Status + Recent SMS -->
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-title" data-en="Deterrent System Status" data-kn="ತಡೆ ವ್ಯವಸ್ಥೆ ಸ್ಥಿತಿ">Deterrent System Status</div>
+      <div style="margin-top:1rem;display:flex;flex-direction:column;gap:0.75rem;">
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:0.7rem 0.9rem;background:var(--mist);border-radius:8px;border:1px solid var(--border);">
+          <span style="font-weight:600;font-size:0.85rem;" data-en="🔊 Buzzer / Alarm" data-kn="🔊 ಬಜರ್ / ಅಲಾರಂ">🔊 Buzzer / Alarm</span>
+          <span style="font-size:0.75rem;font-weight:700;color:var(--safe);background:#e6f4ec;padding:0.2rem 0.6rem;border-radius:20px;" data-en="STANDBY" data-kn="ನಿರೀಕ್ಷೆ">STANDBY</span>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:0.7rem 0.9rem;background:var(--mist);border-radius:8px;border:1px solid var(--border);">
+          <span style="font-weight:600;font-size:0.85rem;" data-en="💡 Strobe Light" data-kn="💡 ಸ್ಟ್ರೋಬ್ ದೀಪ">💡 Strobe Light</span>
+          <span style="font-size:0.75rem;font-weight:700;color:var(--safe);background:#e6f4ec;padding:0.2rem 0.6rem;border-radius:20px;" data-en="STANDBY" data-kn="ನಿರೀಕ್ಷೆ">STANDBY</span>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:0.7rem 0.9rem;background:var(--mist);border-radius:8px;border:1px solid var(--border);">
+          <span style="font-weight:600;font-size:0.85rem;" data-en="📱 Twilio SMS" data-kn="📱 Twilio SMS">📱 Twilio SMS</span>
+          <span style="font-size:0.75rem;font-weight:700;color:#3a6aab;background:#e6eef8;padding:0.2rem 0.6rem;border-radius:20px;" data-en="ACTIVE" data-kn="ಸಕ್ರಿಯ">ACTIVE</span>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:0.7rem 0.9rem;background:var(--mist);border-radius:8px;border:1px solid var(--border);">
+          <span style="font-weight:600;font-size:0.85rem;" data-en="🌲 Forest Dept. Line" data-kn="🌲 ಅರಣ್ಯ ಇಲಾಖೆ ಲೈನ್">🌲 Forest Dept. Line</span>
+          <span style="font-size:0.75rem;font-weight:700;color:#3a6aab;background:#e6eef8;padding:0.2rem 0.6rem;border-radius:20px;" data-en="ACTIVE" data-kn="ಸಕ್ರಿಯ">ACTIVE</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title" data-en="Recent SMS Dispatch Log" data-kn="ಇತ್ತೀಚಿನ SMS ಕಳುಹಿಸಿದ ದಾಖಲೆ">Recent SMS Dispatch Log</div>
+      <table style="margin-top:0.5rem;">
+        <thead>
+          <tr>
+            <th data-en="Time" data-kn="ಸಮಯ">Time</th>
+            <th data-en="Animal" data-kn="ಪ್ರಾಣಿ">Animal</th>
+            <th data-en="Threat" data-kn="ಅಪಾಯ">Threat</th>
+            <th data-en="Status" data-kn="ಸ್ಥಿತಿ">Status</th>
+          </tr>
+        </thead>
+        <tbody>
+        {% for d in detections if d.sms_sent %}
+        {% if loop.index <= 7 %}
+        <tr>
+          <td style="font-family:var(--mono);font-size:0.7rem;color:#8aaa95;">{{ d.timestamp[-8:] }}</td>
+          <td style="font-size:0.8rem;"><span style="margin-right:.3rem;">{{ d.emoji }}</span><span data-en="{{ d.animal }}" data-kn="{{ d.animal_kn }}">{{ d.animal }}</span></td>
+          <td><span class="badge {{ d.threat }}" style="font-size:0.62rem;" data-en="{{ d.threat }}" data-kn="{{ 'ಅಧಿಕ' if d.threat=='HIGH' else 'ಮಧ್ಯಮ' }}">{{ d.threat }}</span></td>
+          <td style="font-size:0.78rem;color:var(--safe);font-weight:600;" data-en="✅ Delivered" data-kn="✅ ತಲುಪಿತು">✅ Delivered</td>
+        </tr>
+        {% endif %}
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Update SMS content when language changes
+const origSetLang = window.setLang;
+window.setLang = function(lang) {
+  origSetLang && origSetLang(lang);
+  ['sms-high','sms-medium','sms-low'].forEach(id => {
+    const el = document.getElementById(id);
+    if(el) el.textContent = el.getAttribute('data-'+lang);
+  });
+};
+</script>
+{% endblock %}

@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en" data-lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{% block title %}WildGuard{% endblock %} — Wildlife Alert System</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&family=Noto+Sans+Kannada:wght@400;600&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
+  <style>
+    :root {
+      --forest:  #0d3b2e;
+      --canopy:  #1a5c42;
+      --moss:    #2d7a57;
+      --leaf:    #4caf7d;
+      --dew:     #a8dfbf;
+      --soil:    #f5ede3;
+      --amber:   #e8a045;
+      --danger:  #d94f3b;
+      --warn:    #e8943a;
+      --safe:    #3aab6b;
+      --ink:     #0f1a14;
+      --mist:    #e8f0eb;
+      --card-bg: #ffffff;
+      --border:  #d0ddd5;
+      --mono: 'JetBrains Mono', monospace;
+      --sans: 'Space Grotesk', sans-serif;
+      --kn:   'Noto Sans Kannada', 'Space Grotesk', sans-serif;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: var(--sans);
+      background: var(--mist);
+      color: var(--ink);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ── NAV ── */
+    nav {
+      background: var(--forest);
+      padding: 0 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      border-bottom: 2px solid var(--canopy);
+    }
+    .nav-brand {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      padding: 0.9rem 1.2rem 0.9rem 0;
+      border-right: 1px solid var(--canopy);
+      margin-right: 0.5rem;
+      text-decoration: none;
+    }
+    .nav-brand .logo { font-size: 1.4rem; }
+    .nav-brand .brand-text {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--dew);
+      letter-spacing: -0.02em;
+    }
+    .nav-brand .brand-sub {
+      font-size: 0.65rem;
+      color: var(--leaf);
+      font-weight: 400;
+      display: block;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+    .nav-links { display: flex; gap: 0; flex: 1; }
+    .nav-links a {
+      color: #8fb8a2;
+      text-decoration: none;
+      font-size: 0.82rem;
+      font-weight: 500;
+      padding: 1rem 0.85rem;
+      transition: color 0.15s, background 0.15s;
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+      border-bottom: 2px solid transparent;
+    }
+    .nav-links a:hover { color: var(--dew); background: rgba(255,255,255,0.05); }
+    .nav-links a.active { color: var(--dew); border-bottom-color: var(--leaf); }
+    .nav-right { margin-left: auto; display: flex; align-items: center; gap: 0.75rem; }
+    .lang-toggle {
+      display: flex;
+      background: var(--canopy);
+      border-radius: 6px;
+      overflow: hidden;
+      border: 1px solid var(--moss);
+    }
+    .lang-btn {
+      padding: 0.35rem 0.7rem;
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: #8fb8a2;
+      cursor: pointer;
+      border: none;
+      background: none;
+      transition: all 0.15s;
+    }
+    .lang-btn.active { background: var(--leaf); color: var(--forest); }
+    .status-dot {
+      width: 8px; height: 8px;
+      background: var(--leaf);
+      border-radius: 50%;
+      box-shadow: 0 0 6px var(--leaf);
+      animation: pulse-dot 2s ease-in-out infinite;
+    }
+    .status-text { font-size: 0.72rem; color: var(--leaf); font-weight: 500; }
+    @keyframes pulse-dot {
+      0%,100% { opacity: 1; } 50% { opacity: 0.4; }
+    }
+
+    /* ── LAYOUT ── */
+    .page { flex: 1; padding: 1.75rem 2rem; max-width: 1280px; margin: 0 auto; width: 100%; }
+    .page-header { margin-bottom: 1.5rem; }
+    .page-header h1 { font-size: 1.6rem; font-weight: 700; color: var(--forest); letter-spacing: -0.03em; }
+    .page-header .sub { font-size: 0.85rem; color: #5a7a65; margin-top: 0.25rem; }
+    .kn { font-family: var(--kn); }
+
+    /* ── CARDS ── */
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.25rem 1.5rem;
+    }
+    .card-title {
+      font-size: 0.7rem;
+      font-weight: 600;
+      color: #7a9a85;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-bottom: 0.5rem;
+    }
+
+    /* ── METRIC CARDS ── */
+    .metrics { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 1rem; margin-bottom: 1.5rem; }
+    .metric-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.1rem 1.25rem;
+      position: relative;
+      overflow: hidden;
+    }
+    .metric-card::before {
+      content: '';
+      position: absolute;
+      left: 0; top: 0; bottom: 0;
+      width: 3px;
+      border-radius: 3px 0 0 3px;
+    }
+    .metric-card.green::before  { background: var(--safe); }
+    .metric-card.red::before    { background: var(--danger); }
+    .metric-card.amber::before  { background: var(--amber); }
+    .metric-card.blue::before   { background: #4a90e2; }
+    .metric-label { font-size: 0.68rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: #7a9a85; margin-bottom: 0.4rem; }
+    .metric-value { font-size: 2rem; font-weight: 700; color: var(--ink); letter-spacing: -0.04em; line-height: 1; }
+    .metric-value.kn { font-size: 1.5rem; }
+    .metric-sub { font-size: 0.72rem; color: #8aaa95; margin-top: 0.3rem; }
+
+    /* ── THREAT BADGES ── */
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+      padding: 0.2rem 0.55rem;
+      border-radius: 20px;
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+    .badge.HIGH   { background: #fce8e6; color: var(--danger); border: 1px solid #f5c5c0; }
+    .badge.MEDIUM { background: #fef3e2; color: #b8620a; border: 1px solid #f5d89a; }
+    .badge.LOW    { background: #e6f4ec; color: #1a7a46; border: 1px solid #b0dfc0; }
+
+    /* ── TABLE ── */
+    table { width: 100%; border-collapse: collapse; }
+    thead th {
+      text-align: left;
+      font-size: 0.68rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #7a9a85;
+      padding: 0.6rem 0.75rem;
+      border-bottom: 1px solid var(--border);
+      background: #f8fcfa;
+    }
+    tbody tr { border-bottom: 1px solid #f0f5f2; transition: background 0.1s; }
+    tbody tr:hover { background: #f5fcf8; }
+    tbody td { padding: 0.75rem; font-size: 0.82rem; vertical-align: middle; }
+
+    /* ── GRID HELPERS ── */
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; }
+    .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1.25rem; }
+
+    /* ── CONFIDENCE BAR ── */
+    .conf-bar { height: 5px; background: #e8f0eb; border-radius: 3px; margin-top: 3px; }
+    .conf-fill { height: 100%; border-radius: 3px; background: linear-gradient(90deg, var(--leaf), var(--moss)); }
+
+    /* ── TOAST ── */
+    #toast {
+      position: fixed;
+      bottom: 1.5rem;
+      right: 1.5rem;
+      background: var(--forest);
+      color: var(--dew);
+      padding: 0.8rem 1.2rem;
+      border-radius: 10px;
+      font-size: 0.82rem;
+      font-weight: 500;
+      border-left: 3px solid var(--leaf);
+      transform: translateY(100px);
+      opacity: 0;
+      transition: all 0.3s ease;
+      z-index: 999;
+      max-width: 320px;
+    }
+    #toast.show { transform: translateY(0); opacity: 1; }
+
+    /* ── TERMINAL ── */
+    .terminal {
+      background: #0a1a10;
+      border-radius: 10px;
+      padding: 1rem 1.2rem;
+      font-family: var(--mono);
+      font-size: 0.78rem;
+      color: #7dde9f;
+      line-height: 1.7;
+      max-height: 260px;
+      overflow-y: auto;
+    }
+    .terminal .log-time { color: #4a8a5e; margin-right: 0.5rem; }
+    .terminal .log-err  { color: #e07070; }
+    .terminal .log-ok   { color: #7dde9f; }
+    .terminal .log-warn { color: #e8c04a; }
+
+    /* ── SCROLLBAR ── */
+    ::-webkit-scrollbar { width: 5px; height: 5px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--dew); border-radius: 4px; }
+
+    /* ── SIMULATE BTN ── */
+    .btn-sim {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      background: var(--canopy);
+      color: var(--dew);
+      border: 1px solid var(--moss);
+      border-radius: 8px;
+      padding: 0.5rem 1rem;
+      font-family: var(--sans);
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .btn-sim:hover { background: var(--moss); color: #fff; }
+
+    /* ── ARCH FLOW ── */
+    .arch-flow { display: flex; align-items: center; gap: 0; flex-wrap: wrap; }
+    .arch-node {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      background: var(--mist);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 0.75rem 1rem;
+      min-width: 100px;
+      text-align: center;
+    }
+    .arch-node .icon { font-size: 1.5rem; margin-bottom: 0.3rem; }
+    .arch-node .label { font-size: 0.7rem; font-weight: 600; color: var(--forest); }
+    .arch-node .sublabel { font-size: 0.6rem; color: #8aaa95; margin-top: 0.1rem; }
+    .arch-arrow { font-size: 1.1rem; color: var(--leaf); padding: 0 0.5rem; }
+
+    /* ── SENSOR GAUGE ── */
+    .sensor-row { display: flex; align-items: center; gap: 0.75rem; padding: 0.6rem 0; border-bottom: 1px solid #f0f5f2; }
+    .sensor-label { font-size: 0.75rem; font-weight: 600; width: 160px; color: var(--forest); }
+    .sensor-bar { flex: 1; height: 8px; background: #e8f0eb; border-radius: 4px; }
+    .sensor-bar-fill { height: 100%; border-radius: 4px; transition: width 1s ease; }
+    .sensor-val { font-family: var(--mono); font-size: 0.75rem; font-weight: 600; width: 60px; text-align: right; color: var(--ink); }
+
+    @media (max-width: 768px) {
+      .grid-2, .grid-3 { grid-template-columns: 1fr; }
+      .page { padding: 1rem; }
+      .nav-links a span.nav-label { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a href="/" class="nav-brand">
+    <span class="logo">🌿</span>
+    <span>
+      <span class="brand-text">WildGuard</span>
+      <span class="brand-sub kn">ವನ್ಯಜೀವಿ ರಕ್ಷಣಾ ವ್ಯವಸ್ಥೆ</span>
+    </span>
+  </a>
+  <div class="nav-links">
+    <a href="/"            class="{{ 'active' if request.path == '/' }}">            📊 <span class="nav-label" data-en="Dashboard" data-kn="ಡ್ಯಾಶ್‌ಬೋರ್ಡ್">Dashboard</span></a>
+    <a href="/esp32"       class="{{ 'active' if request.path == '/esp32' }}">       🔌 <span class="nav-label" data-en="ESP32 Device" data-kn="ಸಾಧನ ಡೇಟಾ">ESP32 Device</span></a>
+    <a href="/detections"  class="{{ 'active' if request.path == '/detections' }}">  🎯 <span class="nav-label" data-en="Detections" data-kn="ಪತ್ತೆ ದಾಖಲೆ">Detections</span></a>
+    <a href="/alerts"      class="{{ 'active' if request.path == '/alerts' }}">      🔔 <span class="nav-label" data-en="Alerts" data-kn="ಎಚ್ಚರಿಕೆಗಳು">Alerts</span></a>
+    <a href="/threat-matrix" class="{{ 'active' if request.path == '/threat-matrix' }}">⚠️ <span class="nav-label" data-en="Threat Matrix" data-kn="ಅಪಾಯ ಮಟ್ಟ">Threat Matrix</span></a>
+    <a href="/api-docs"    class="{{ 'active' if request.path == '/api-docs' }}">    🔗 <span class="nav-label" data-en="API" data-kn="API">API</span></a>
+  </div>
+  <div class="nav-right">
+    <span class="status-dot"></span>
+    <span class="status-text" data-en="Live" data-kn="ನೇರ">Live</span>
+    <div class="lang-toggle">
+      <button class="lang-btn active" onclick="setLang('en')" id="btn-en">EN</button>
+      <button class="lang-btn" onclick="setLang('kn')" id="btn-kn">ಕನ್ನಡ</button>
+    </div>
+  </div>
+</nav>
+
+<div id="toast"></div>
+
+{% block content %}{% endblock %}
+
+<script>
+// Language toggle
+function setLang(lang) {
+  document.documentElement.setAttribute('data-lang', lang);
+  document.getElementById('btn-en').classList.toggle('active', lang === 'en');
+  document.getElementById('btn-kn').classList.toggle('active', lang === 'kn');
+  document.querySelectorAll('[data-en][data-kn]').forEach(el => {
+    el.textContent = el.getAttribute('data-' + lang);
+  });
+  localStorage.setItem('wg-lang', lang);
+}
+// Restore lang on load
+const savedLang = localStorage.getItem('wg-lang') || 'en';
+if (savedLang === 'kn') setLang('kn');
+
+// Toast helper
+function showToast(msg, icon='🔔') {
+  const t = document.getElementById('toast');
+  t.textContent = icon + ' ' + msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3200);
+}
+</script>
+{% block scripts %}{% endblock %}
+</body>
+</html>

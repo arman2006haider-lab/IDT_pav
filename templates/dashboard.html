@@ -1,0 +1,182 @@
+{% extends "base.html" %}
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="page">
+  <div class="page-header" style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:1rem;">
+    <div>
+      <h1 data-en="Field Operations Dashboard" data-kn="ಕ್ಷೇತ್ರ ಕಾರ್ಯಾಚರಣೆ ಡ್ಯಾಶ್‌ಬೋರ್ಡ್">Field Operations Dashboard</h1>
+      <p class="sub" data-en="Real-time wildlife intrusion monitoring — Karnataka Forest Border Zone" data-kn="ರಿಯಲ್-ಟೈಮ್ ವನ್ಯಜೀವಿ ಒಳನುಗ್ಗುವಿಕೆ ಮೇಲ್ವಿಚಾರಣೆ — ಕರ್ನಾಟಕ ಅರಣ್ಯ ಗಡಿ ವಲಯ">Real-time wildlife intrusion monitoring — Karnataka Forest Border Zone</p>
+    </div>
+    <button class="btn-sim" onclick="simulate()">▶ <span data-en="Simulate Detection" data-kn="ಪತ್ತೆ ಅನುಕರಣೆ">Simulate Detection</span></button>
+  </div>
+
+  <!-- Metrics -->
+  <div class="metrics">
+    <div class="metric-card green">
+      <div class="metric-label" data-en="Total Detections" data-kn="ಒಟ್ಟು ಪತ್ತೆ">Total Detections</div>
+      <div class="metric-value" id="m-total">{{ total }}</div>
+      <div class="metric-sub" data-en="This session" data-kn="ಈ ಸೆಷನ್">This session</div>
+    </div>
+    <div class="metric-card red">
+      <div class="metric-label" data-en="High Threat" data-kn="ಅಧಿಕ ಅಪಾಯ">High Threat</div>
+      <div class="metric-value" id="m-high">{{ high }}</div>
+      <div class="metric-sub" data-en="Elephants, Gaurs, Leopards" data-kn="ಆನೆ, ಕಾಡುಕೋಣ, ಚಿರತೆ">Elephants, Gaurs, Leopards</div>
+    </div>
+    <div class="metric-card amber">
+      <div class="metric-label" data-en="SMS Alerts Sent" data-kn="SMS ಎಚ್ಚರಿಕೆ ಕಳುಹಿಸಲಾಗಿದೆ">SMS Alerts Sent</div>
+      <div class="metric-value" id="m-sms">{{ sms }}</div>
+      <div class="metric-sub" data-en="Via Twilio" data-kn="ಟ್ವಿಲಿಯೋ ಮೂಲಕ">Via Twilio</div>
+    </div>
+    <div class="metric-card blue">
+      <div class="metric-label" data-en="Avg. AI Confidence" data-kn="ಸರಾಸರಿ AI ವಿಶ್ವಾಸ">Avg. AI Confidence</div>
+      <div class="metric-value">{{ avg_conf }}%</div>
+      <div class="metric-sub" data-en="YOLOv8 model" data-kn="YOLOv8 ಮಾಡೆಲ್">YOLOv8 model</div>
+    </div>
+  </div>
+
+  <!-- System Architecture -->
+  <div class="card" style="margin-bottom:1.25rem;">
+    <div class="card-title" data-en="System Architecture — Data Flow" data-kn="ಸಿಸ್ಟಂ ಆರ್ಕಿಟೆಕ್ಚರ್ — ಡೇಟಾ ಹರಿವು">System Architecture — Data Flow</div>
+    <div class="arch-flow" style="margin-top:0.75rem;">
+      <div class="arch-node">
+        <span class="icon">📡</span>
+        <span class="label" data-en="PIR + Ultrasonic" data-kn="PIR ಸಂವೇದಕ">PIR + Ultrasonic</span>
+        <span class="sublabel" data-en="Motion trigger" data-kn="ಚಲನೆ ಪ್ರಚೋದಕ">Motion trigger</span>
+      </div>
+      <span class="arch-arrow">→</span>
+      <div class="arch-node">
+        <span class="icon">📸</span>
+        <span class="label" data-en="ESP32-CAM" data-kn="ESP32-CAM">ESP32-CAM</span>
+        <span class="sublabel" data-en="Capture JPEG" data-kn="ಫೋಟೋ ತೆಗೆ">Capture JPEG</span>
+      </div>
+      <span class="arch-arrow">→</span>
+      <div class="arch-node">
+        <span class="icon">☁️</span>
+        <span class="label" data-en="FastAPI Cloud" data-kn="ಕ್ಲೌಡ್ ಸರ್ವರ್">FastAPI Cloud</span>
+        <span class="sublabel">HTTP POST</span>
+      </div>
+      <span class="arch-arrow">→</span>
+      <div class="arch-node">
+        <span class="icon">🤖</span>
+        <span class="label">YOLOv8</span>
+        <span class="sublabel" data-en="AI Detection" data-kn="AI ಪತ್ತೆ">AI Detection</span>
+      </div>
+      <span class="arch-arrow">→</span>
+      <div class="arch-node" style="border-color:#f5c5c0;background:#fef8f7;">
+        <span class="icon">⚠️</span>
+        <span class="label" data-en="Threat Matrix" data-kn="ಅಪಾಯ ಮ್ಯಾಟ್ರಿಕ್ಸ್">Threat Matrix</span>
+        <span class="sublabel" data-en="Classify level" data-kn="ಮಟ್ಟ ನಿರ್ಧಾರ">Classify level</span>
+      </div>
+      <span class="arch-arrow">→</span>
+      <div class="arch-node" style="border-color:#f5d89a;background:#fffbf0;">
+        <span class="icon">📱</span>
+        <span class="label">Twilio SMS</span>
+        <span class="sublabel" data-en="Farmer alert" data-kn="ರೈತರ ಎಚ್ಚರಿಕೆ">Farmer alert</span>
+      </div>
+      <span class="arch-arrow">→</span>
+      <div class="arch-node" style="border-color:#b0dfc0;background:#f0faf4;">
+        <span class="icon">🔊</span>
+        <span class="label" data-en="Deterrents" data-kn="ತಡೆ ವ್ಯವಸ್ಥೆ">Deterrents</span>
+        <span class="sublabel" data-en="Buzzer + Strobe" data-kn="ಬಜರ್ + ಸ್ಟ್ರೋಬ್">Buzzer + Strobe</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Charts + Recent -->
+  <div class="grid-2" style="margin-bottom:1.25rem;">
+    <div class="card">
+      <div class="card-title" data-en="Detections — Last 24 Hours" data-kn="ಕಳೆದ 24 ಗಂಟೆ ಪತ್ತೆ">Detections — Last 24 Hours</div>
+      <canvas id="hourlyChart" height="180"></canvas>
+    </div>
+    <div class="card">
+      <div class="card-title" data-en="Species Breakdown" data-kn="ಪ್ರಾಣಿ ಪ್ರಭೇದ ವಿಭಜನೆ">Species Breakdown</div>
+      <canvas id="speciesChart" height="180"></canvas>
+    </div>
+  </div>
+
+  <!-- Recent detections -->
+  <div class="card">
+    <div class="card-title" data-en="Recent Detections" data-kn="ಇತ್ತೀಚಿನ ಪತ್ತೆ">Recent Detections</div>
+    <table style="margin-top:0.5rem;">
+      <thead>
+        <tr>
+          <th data-en="Animal" data-kn="ಪ್ರಾಣಿ">Animal</th>
+          <th data-en="Threat" data-kn="ಅಪಾಯ">Threat</th>
+          <th data-en="Confidence" data-kn="ವಿಶ್ವಾಸ">Confidence</th>
+          <th data-en="Location" data-kn="ಸ್ಥಳ">Location</th>
+          <th data-en="SMS" data-kn="SMS">SMS</th>
+          <th data-en="Time" data-kn="ಸಮಯ">Time</th>
+        </tr>
+      </thead>
+      <tbody id="recent-tbody">
+      {% for d in recent %}
+      <tr>
+        <td><span style="margin-right:0.4rem;">{{ d.emoji }}</span><span data-en="{{ d.animal }}" data-kn="{{ d.animal_kn }}">{{ d.animal }}</span></td>
+        <td><span class="badge {{ d.threat }}" data-en="{{ d.threat }}" data-kn="{{ 'ಅಧಿಕ' if d.threat=='HIGH' else ('ಮಧ್ಯಮ' if d.threat=='MEDIUM' else 'ಕಡಿಮೆ') }}">{{ d.threat }}</span></td>
+        <td>
+          {{ d.confidence }}%
+          <div class="conf-bar"><div class="conf-fill" style="width:{{ d.confidence }}%"></div></div>
+        </td>
+        <td><span data-en="{{ d.location }}" data-kn="{{ d.location }}">{{ d.location }}</span></td>
+        <td>{{ '✅' if d.sms_sent else '—' }}</td>
+        <td style="font-family:var(--mono);font-size:0.75rem;color:#7a9a85;">{{ d.timestamp[-8:] }}</td>
+      </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+const hourlyData = {{ hourly | safe }};
+const speciesLabels = {{ species_labels | safe }};
+const speciesData   = {{ species_data | safe }};
+
+new Chart(document.getElementById('hourlyChart'), {
+  type: 'bar',
+  data: {
+    labels: Array.from({length:24}, (_,i) => i+':00'),
+    datasets: [{ data: hourlyData, backgroundColor: '#4caf7d88', borderColor: '#2d7a57', borderWidth: 1, borderRadius: 4 }]
+  },
+  options: { plugins:{legend:{display:false}}, scales:{ y:{beginAtZero:true,grid:{color:'#e8f0eb'}}, x:{grid:{display:false},ticks:{font:{size:9}}} } }
+});
+
+new Chart(document.getElementById('speciesChart'), {
+  type: 'doughnut',
+  data: {
+    labels: speciesLabels,
+    datasets: [{ data: speciesData, backgroundColor: ['#ef4444','#f97316','#eab308','#ef4444','#22c55e','#22c55e'], borderWidth: 2, borderColor: '#fff' }]
+  },
+  options: { plugins: { legend: { position: 'right', labels:{ font:{size:11}, boxWidth:12 } } }, cutout:'68%' }
+});
+
+async function simulate() {
+  const res = await fetch('/api/simulate');
+  const d = await res.json();
+  const lang = document.documentElement.getAttribute('data-lang');
+  const name = lang==='kn' ? d.animal_kn : d.animal;
+  showToast(`${d.emoji} ${name} detected — ${d.threat} threat (${d.confidence}% confidence)`);
+  // Update counters
+  document.getElementById('m-total').textContent = parseInt(document.getElementById('m-total').textContent)+1;
+  if(d.threat==='HIGH') document.getElementById('m-high').textContent = parseInt(document.getElementById('m-high').textContent)+1;
+  if(d.sms_sent) document.getElementById('m-sms').textContent = parseInt(document.getElementById('m-sms').textContent)+1;
+  // Prepend to table
+  const tbody = document.getElementById('recent-tbody');
+  const tr = document.createElement('tr');
+  tr.style.background = '#f0faf4';
+  tr.innerHTML = `
+    <td><span style="margin-right:.4rem">${d.emoji}</span>${name}</td>
+    <td><span class="badge ${d.threat}">${d.threat}</span></td>
+    <td>${d.confidence}%<div class="conf-bar"><div class="conf-fill" style="width:${d.confidence}%"></div></div></td>
+    <td>${d.location}</td>
+    <td>${d.sms_sent?'✅':'—'}</td>
+    <td style="font-family:var(--mono);font-size:.75rem;color:#7a9a85;">${d.timestamp.slice(-8)}</td>
+  `;
+  tbody.prepend(tr);
+  setTimeout(()=>tr.style.background='', 1500);
+}
+</script>
+{% endblock %}

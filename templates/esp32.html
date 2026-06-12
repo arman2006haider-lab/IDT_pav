@@ -1,0 +1,197 @@
+{% extends "base.html" %}
+{% block title %}ESP32 Device{% endblock %}
+
+{% block content %}
+<div class="page">
+  <div class="page-header">
+    <h1 data-en="ESP32 Device — Live Sensor Data" data-kn="ESP32 ಸಾಧನ — ನೇರ ಸಂವೇದಕ ಡೇಟಾ">ESP32 Device — Live Sensor Data</h1>
+    <p class="sub" data-en="All readings from the physical ESP32-CAM node deployed in the field" data-kn="ಕ್ಷೇತ್ರದಲ್ಲಿ ನಿಯೋಜಿಸಲಾದ ESP32-CAM ನೋಡ್‌ನಿಂದ ಎಲ್ಲಾ ರೀಡಿಂಗ್‌ಗಳು">All readings from the physical ESP32-CAM node deployed in the field</p>
+  </div>
+
+  <!-- Status bar -->
+  <div style="display:flex;gap:0.75rem;margin-bottom:1.25rem;flex-wrap:wrap;">
+    <div class="card" style="display:flex;align-items:center;gap:0.6rem;padding:0.75rem 1rem;flex:1;min-width:160px;">
+      <span style="font-size:1.2rem;">🔌</span>
+      <div>
+        <div style="font-size:0.68rem;font-weight:600;color:#7a9a85;text-transform:uppercase;letter-spacing:.08em;" data-en="Device Status" data-kn="ಸಾಧನ ಸ್ಥಿತಿ">Device Status</div>
+        <div style="font-size:0.9rem;font-weight:700;color:var(--safe);" id="dev-status" data-en="Online" data-kn="ಆನ್‌ಲೈನ್">Online</div>
+      </div>
+    </div>
+    <div class="card" style="display:flex;align-items:center;gap:0.6rem;padding:0.75rem 1rem;flex:1;min-width:160px;">
+      <span style="font-size:1.2rem;">📶</span>
+      <div>
+        <div style="font-size:0.68rem;font-weight:600;color:#7a9a85;text-transform:uppercase;letter-spacing:.08em;">WiFi RSSI</div>
+        <div style="font-size:0.9rem;font-weight:700;color:var(--ink);" id="wifi-rssi">—</div>
+      </div>
+    </div>
+    <div class="card" style="display:flex;align-items:center;gap:0.6rem;padding:0.75rem 1rem;flex:1;min-width:160px;">
+      <span style="font-size:1.2rem;">🔋</span>
+      <div>
+        <div style="font-size:0.68rem;font-weight:600;color:#7a9a85;text-transform:uppercase;letter-spacing:.08em;" data-en="Battery" data-kn="ಬ್ಯಾಟರಿ">Battery</div>
+        <div style="font-size:0.9rem;font-weight:700;color:var(--ink);" id="battery">—</div>
+      </div>
+    </div>
+    <div class="card" style="display:flex;align-items:center;gap:0.6rem;padding:0.75rem 1rem;flex:1;min-width:160px;">
+      <span style="font-size:1.2rem;">⏱️</span>
+      <div>
+        <div style="font-size:0.68rem;font-weight:600;color:#7a9a85;text-transform:uppercase;letter-spacing:.08em;" data-en="Last POST" data-kn="ಕೊನೆಯ POST">Last POST</div>
+        <div style="font-size:0.9rem;font-weight:700;color:var(--ink);" id="last-post">—</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid-2" style="margin-bottom:1.25rem;">
+    <!-- Serial Terminal -->
+    <div class="card">
+      <div class="card-title" style="display:flex;align-items:center;justify-content:space-between;">
+        <span data-en="Serial Monitor (115200 baud)" data-kn="ಸೀರಿಯಲ್ ಮಾನಿಟರ್">Serial Monitor (115200 baud)</span>
+        <span style="font-size:0.65rem;color:var(--leaf);font-weight:600;animation:pulse-dot 1.5s infinite;">● LIVE</span>
+      </div>
+      <div class="terminal" id="serial-log">
+        {% for line in log %}
+        <div><span class="log-time">[BOOT+{{ loop.index * 120 }}ms]</span><span class="{{ 'log-ok' if 'OK' in line or 'Connected' in line or 'armed' in line else ('log-warn' if 'Connecting' in line else 'log-ok') }}">{{ line }}</span></div>
+        {% endfor %}
+        <div id="live-log-end"></div>
+      </div>
+    </div>
+
+    <!-- Sensor readings -->
+    <div class="card">
+      <div class="card-title" data-en="Live Sensor Readings" data-kn="ನೇರ ಸಂವೇದಕ ರೀಡಿಂಗ್">Live Sensor Readings</div>
+      <div style="margin-top:0.5rem;">
+        <div class="sensor-row">
+          <span class="sensor-label" data-en="🔴 PIR Status" data-kn="🔴 PIR ಸ್ಥಿತಿ">🔴 PIR Status</span>
+          <div class="sensor-bar"><div class="sensor-bar-fill" id="pir-bar" style="width:0%;background:var(--danger)"></div></div>
+          <span class="sensor-val" id="pir-val">CLEAR</span>
+        </div>
+        <div class="sensor-row">
+          <span class="sensor-label" data-en="📏 Ultrasonic (cm)" data-kn="📏 ಅಲ್ಟ್ರಾಸೋನಿಕ್ (cm)">📏 Ultrasonic (cm)</span>
+          <div class="sensor-bar"><div class="sensor-bar-fill" id="ultra-bar" style="width:50%;background:var(--leaf)"></div></div>
+          <span class="sensor-val" id="ultra-val">—</span>
+        </div>
+        <div class="sensor-row">
+          <span class="sensor-label" data-en="🔊 GPIO Buzzer" data-kn="🔊 GPIO ಬಜರ್">🔊 GPIO Buzzer</span>
+          <div class="sensor-bar"><div class="sensor-bar-fill" id="buzzer-bar" style="width:0%;background:var(--amber)"></div></div>
+          <span class="sensor-val" id="buzzer-val">OFF</span>
+        </div>
+        <div class="sensor-row">
+          <span class="sensor-label" data-en="🔋 Battery %" data-kn="🔋 ಬ್ಯಾಟರಿ %">🔋 Battery %</span>
+          <div class="sensor-bar"><div class="sensor-bar-fill" id="bat-bar" style="width:80%;background:var(--safe)"></div></div>
+          <span class="sensor-val" id="bat-val">—</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- JSON Payload -->
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-title" data-en="HTTP POST Payload (ESP32 → Cloud)" data-kn="HTTP POST ಡೇಟಾ (ESP32 → ಕ್ಲೌಡ್)">HTTP POST Payload (ESP32 → Cloud)</div>
+      <pre class="terminal" style="max-height:220px;margin-top:0.5rem;" id="json-payload">{
+  "device_id": "wg-node-01",
+  "pir_triggered": false,
+  "ultrasonic_cm": 324,
+  "wifi_rssi": -48,
+  "gpio_buzzer": 0,
+  "gpio_strobe": 0,
+  "battery_pct": 87,
+  "uptime_s": 14400,
+  "image": "&lt;base64 JPEG&gt;"
+}</pre>
+    </div>
+    <div class="card">
+      <div class="card-title" data-en="Cloud Response (FastAPI → ESP32)" data-kn="ಕ್ಲೌಡ್ ಪ್ರತಿಕ್ರಿಯೆ (FastAPI → ESP32)">Cloud Response (FastAPI → ESP32)</div>
+      <pre class="terminal" style="max-height:220px;margin-top:0.5rem;">{
+  "status": "ok",
+  "animal": "Elephant",
+  "threat_level": "HIGH",
+  "confidence": 94,
+  "gpio_commands": {
+    "buzzer": 1,
+    "strobe": 1,
+    "sms": 1
+  },
+  "sms_dispatched": true,
+  "timestamp": "2025-06-12T22:14:30"
+}</pre>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+const logMessages = [
+  ['log-ok',   '[PIR]   Motion detected at GPIO34'],
+  ['log-warn', '[CAM]   Capturing image... 320x240 JPEG'],
+  ['log-ok',   '[CAM]   Image size: 42.3 KB'],
+  ['log-ok',   '[HTTP]  POST /api/detect → 200 OK (312ms)'],
+  ['log-ok',   '[AI]    Elephant detected — confidence: 94%'],
+  ['log-warn', '[ALERT] THREAT: HIGH — triggering GPIO'],
+  ['log-ok',   '[GPIO]  Buzzer ON (GPIO26)'],
+  ['log-ok',   '[GPIO]  Strobe ON (GPIO27)'],
+  ['log-ok',   '[SMS]   Twilio dispatch: +91-98450-XXXXX'],
+  ['log-ok',   '[PIR]   Reset. Monitoring...'],
+];
+let logIdx = 0;
+
+async function fetchESP32() {
+  const res = await fetch('/api/esp32-status');
+  const d = await res.json();
+  document.getElementById('wifi-rssi').textContent = d.wifi_rssi + ' dBm';
+  document.getElementById('battery').textContent = d.battery_pct + '%';
+  document.getElementById('last-post').textContent = d.last_post_ms + ' ms';
+
+  // PIR
+  const pirOn = d.pir_triggered;
+  document.getElementById('pir-bar').style.width = pirOn ? '100%' : '0%';
+  document.getElementById('pir-val').textContent = pirOn ? 'TRIGGERED' : 'CLEAR';
+  document.getElementById('pir-val').style.color = pirOn ? 'var(--danger)' : 'var(--safe)';
+
+  // Ultrasonic
+  const ultraPct = Math.max(5, 100 - (d.ultrasonic_cm / 700 * 100));
+  document.getElementById('ultra-bar').style.width = ultraPct + '%';
+  document.getElementById('ultra-bar').style.background = d.ultrasonic_cm < 200 ? 'var(--danger)' : 'var(--leaf)';
+  document.getElementById('ultra-val').textContent = d.ultrasonic_cm + ' cm';
+
+  // Buzzer
+  document.getElementById('buzzer-bar').style.width = d.gpio_buzzer ? '100%' : '0%';
+  document.getElementById('buzzer-val').textContent = d.gpio_buzzer ? 'ON' : 'OFF';
+  document.getElementById('buzzer-val').style.color = d.gpio_buzzer ? 'var(--danger)' : '#7a9a85';
+
+  // Battery
+  document.getElementById('bat-bar').style.width = d.battery_pct + '%';
+  document.getElementById('bat-bar').style.background = d.battery_pct > 50 ? 'var(--safe)' : d.battery_pct > 20 ? 'var(--amber)' : 'var(--danger)';
+  document.getElementById('bat-val').textContent = d.battery_pct + '%';
+  document.getElementById('battery').textContent = d.battery_pct + '%';
+
+  // Update JSON payload display
+  document.getElementById('json-payload').textContent = JSON.stringify({
+    device_id: 'wg-node-01',
+    pir_triggered: d.pir_triggered,
+    ultrasonic_cm: d.ultrasonic_cm,
+    wifi_rssi: d.wifi_rssi,
+    gpio_buzzer: d.gpio_buzzer,
+    gpio_strobe: d.gpio_strobe,
+    battery_pct: d.battery_pct,
+    uptime_s: d.uptime_s,
+    image: '<base64 JPEG>'
+  }, null, 2);
+}
+
+function addLogLine() {
+  const [cls, msg] = logMessages[logIdx % logMessages.length];
+  logIdx++;
+  const now = new Date().toLocaleTimeString();
+  const div = document.createElement('div');
+  div.innerHTML = `<span class="log-time">[${now}]</span><span class="${cls}">${msg}</span>`;
+  const log = document.getElementById('serial-log');
+  log.insertBefore(div, document.getElementById('live-log-end'));
+  log.scrollTop = log.scrollHeight;
+}
+
+fetchESP32();
+setInterval(fetchESP32, 3000);
+setInterval(addLogLine, 2500);
+</script>
+{% endblock %}

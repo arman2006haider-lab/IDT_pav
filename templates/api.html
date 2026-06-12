@@ -1,0 +1,138 @@
+{% extends "base.html" %}
+{% block title %}API Docs{% endblock %}
+
+{% block content %}
+<div class="page">
+  <div class="page-header">
+    <h1 data-en="FastAPI — Endpoint Reference" data-kn="FastAPI — ಎಂಡ್‌ಪಾಯಿಂಟ್ ರೆಫರೆನ್ಸ್">FastAPI — Endpoint Reference</h1>
+    <p class="sub" data-en="Cloud backend receives images from ESP32, runs YOLOv8 inference, and returns GPIO commands" data-kn="ಕ್ಲೌಡ್ ಬ್ಯಾಕೆಂಡ್ ESP32ನಿಂದ ಚಿತ್ರಗಳನ್ನು ಸ್ವೀಕರಿಸುತ್ತದೆ, YOLOv8 ಇನ್ಫರೆನ್ಸ್ ಚಲಾಯಿಸುತ್ತದೆ ಮತ್ತು GPIO ಆಜ್ಞೆಗಳನ್ನು ಹಿಂತಿರುಗಿಸುತ್ತದೆ">Cloud backend receives images from ESP32, runs YOLOv8 inference, and returns GPIO commands</p>
+  </div>
+
+  <!-- Server status -->
+  <div style="display:flex;gap:0.75rem;flex-wrap:wrap;margin-bottom:1.5rem;">
+    <div class="card" style="display:flex;align-items:center;gap:0.6rem;padding:.7rem 1rem;">
+      <span class="status-dot"></span>
+      <span style="font-size:0.82rem;font-weight:600;" data-en="Server: Online" data-kn="ಸರ್ವರ್: ಆನ್‌ಲೈನ್">Server: Online</span>
+    </div>
+    <div class="card" style="padding:.7rem 1rem;font-size:0.82rem;">
+      <strong>Base URL:</strong> <code style="font-family:var(--mono);color:var(--canopy);">https://wildguard.cloud/api</code>
+    </div>
+    <div class="card" style="padding:.7rem 1rem;font-size:0.82rem;">
+      <strong data-en="Model:" data-kn="ಮಾಡೆಲ್:">Model:</strong> YOLOv8n (wildlife-finetuned)
+    </div>
+  </div>
+
+  <!-- Endpoint cards -->
+  <div style="display:flex;flex-direction:column;gap:1rem;">
+    <!-- POST /detect -->
+    <div class="card">
+      <div style="display:flex;align-items:center;gap:0.75rem;margin-bottom:0.75rem;">
+        <span style="background:#e6eef8;color:#3a6aab;font-family:var(--mono);font-size:0.75rem;font-weight:700;padding:.25rem .6rem;border-radius:5px;">POST</span>
+        <code style="font-family:var(--mono);font-size:0.88rem;font-weight:600;">/api/detect</code>
+        <span style="font-size:0.78rem;color:#7a9a85;" data-en="— Main detection endpoint" data-kn="— ಮುಖ್ಯ ಪತ್ತೆ ಎಂಡ್‌ಪಾಯಿಂಟ್">— Main detection endpoint</span>
+      </div>
+      <div class="grid-2">
+        <div>
+          <div style="font-size:0.7rem;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:#7a9a85;margin-bottom:.4rem;" data-en="Request Body (multipart/form-data)" data-kn="ವಿನಂತಿ ಬಾಡಿ">Request Body (multipart/form-data)</div>
+          <pre class="terminal" style="max-height:180px;">{
+  "image": &lt;JPEG binary&gt;,
+  "device_id": "wg-node-01",
+  "pir_triggered": true,
+  "ultrasonic_cm": 124,
+  "wifi_rssi": -48,
+  "battery_pct": 87
+}</pre>
+        </div>
+        <div>
+          <div style="font-size:0.7rem;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:#7a9a85;margin-bottom:.4rem;" data-en="Response (200 OK)" data-kn="ಪ್ರತಿಕ್ರಿಯೆ">Response (200 OK)</div>
+          <pre class="terminal" style="max-height:180px;" id="api-live-resp">Click "Try It" to test live →</pre>
+        </div>
+      </div>
+      <button class="btn-sim" style="margin-top:0.75rem;" onclick="tryAPI()">▶ <span data-en="Try It Live" data-kn="ನೇರ ಪ್ರಯತ್ನಿಸಿ">Try It Live</span></button>
+    </div>
+
+    <!-- GET /esp32-status -->
+    <div class="card">
+      <div style="display:flex;align-items:center;gap:0.75rem;margin-bottom:0.75rem;">
+        <span style="background:#e6f4ec;color:var(--safe);font-family:var(--mono);font-size:0.75rem;font-weight:700;padding:.25rem .6rem;border-radius:5px;">GET</span>
+        <code style="font-family:var(--mono);font-size:0.88rem;font-weight:600;">/api/esp32-status</code>
+        <span style="font-size:0.78rem;color:#7a9a85;" data-en="— Live sensor readings from device" data-kn="— ಸಾಧನದಿಂದ ನೇರ ಸಂವೇದಕ ರೀಡಿಂಗ್">— Live sensor readings from device</span>
+      </div>
+      <pre class="terminal" style="max-height:160px;">{
+  "pir_triggered": false,
+  "ultrasonic_cm": 324,
+  "wifi_rssi": -48,
+  "gpio_buzzer": 0,
+  "gpio_strobe": 0,
+  "battery_pct": 87,
+  "uptime_s": 14400,
+  "last_post_ms": 312
+}</pre>
+    </div>
+
+    <!-- GET /simulate -->
+    <div class="card">
+      <div style="display:flex;align-items:center;gap:0.75rem;margin-bottom:0.75rem;">
+        <span style="background:#e6f4ec;color:var(--safe);font-family:var(--mono);font-size:0.75rem;font-weight:700;padding:.25rem .6rem;border-radius:5px;">GET</span>
+        <code style="font-family:var(--mono);font-size:0.88rem;font-weight:600;">/api/simulate</code>
+        <span style="font-size:0.78rem;color:#7a9a85;" data-en="— Demo: inject a random detection event" data-kn="— ಡೆಮೊ: ಯಾದೃಚ್ಛಿಕ ಪತ್ತೆ ಘಟನೆ ಸೇರಿಸಿ">— Demo: inject a random detection event</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Python code -->
+  <div class="card" style="margin-top:1rem;">
+    <div class="card-title" data-en="Core FastAPI Handler (Python)" data-kn="ಮುಖ್ಯ FastAPI ಹ್ಯಾಂಡ್ಲರ್ (Python)">Core FastAPI Handler (Python)</div>
+    <pre class="terminal" style="max-height:320px;margin-top:0.5rem;"><span style="color:#4a8a5e"># FastAPI + YOLOv8 + Twilio — WildGuard Cloud Backend</span>
+<span style="color:#7dde9f">from</span> fastapi <span style="color:#7dde9f">import</span> FastAPI, UploadFile
+<span style="color:#7dde9f">from</span> ultralytics <span style="color:#7dde9f">import</span> YOLO
+<span style="color:#7dde9f">from</span> twilio.rest <span style="color:#7dde9f">import</span> Client
+<span style="color:#7dde9f">import</span> cv2, numpy <span style="color:#7dde9f">as</span> np
+
+app = FastAPI()
+model = YOLO(<span style="color:#e8a045">"wildlife_yolov8n.pt"</span>)  <span style="color:#4a8a5e"># fine-tuned weights</span>
+twilio = Client(ACCOUNT_SID, AUTH_TOKEN)
+
+THREAT_MATRIX = {
+    <span style="color:#e8a045">"elephant"</span>: <span style="color:#e8a045">"HIGH"</span>, <span style="color:#e8a045">"gaur"</span>: <span style="color:#e8a045">"HIGH"</span>, <span style="color:#e8a045">"leopard"</span>: <span style="color:#e8a045">"HIGH"</span>,
+    <span style="color:#e8a045">"wild_boar"</span>: <span style="color:#e8a045">"MEDIUM"</span>, <span style="color:#e8a045">"deer"</span>: <span style="color:#e8a045">"LOW"</span>, <span style="color:#e8a045">"monkey"</span>: <span style="color:#e8a045">"LOW"</span>,
+}
+
+<span style="color:#7dde9f">@app.post</span>(<span style="color:#e8a045">"/api/detect"</span>)
+<span style="color:#7dde9f">async def</span> detect(image: UploadFile):
+    img_bytes = <span style="color:#7dde9f">await</span> image.read()
+    arr = np.frombuffer(img_bytes, np.uint8)
+    frame = cv2.imdecode(arr, cv2.IMREAD_COLOR)
+
+    results = model(frame)[0]
+    animal = results.names[int(results.boxes.cls[0])]
+    confidence = float(results.boxes.conf[0])
+    threat = THREAT_MATRIX.get(animal, <span style="color:#e8a045">"LOW"</span>)
+
+    gpio = {<span style="color:#e8a045">"HIGH"</span>: {<span style="color:#e8a045">"buzzer"</span>:1,<span style="color:#e8a045">"strobe"</span>:1,<span style="color:#e8a045">"sms"</span>:1},
+            <span style="color:#e8a045">"MEDIUM"</span>: {<span style="color:#e8a045">"buzzer"</span>:1,<span style="color:#e8a045">"strobe"</span>:0,<span style="color:#e8a045">"sms"</span>:1},
+            <span style="color:#e8a045">"LOW"</span>: {<span style="color:#e8a045">"buzzer"</span>:0,<span style="color:#e8a045">"strobe"</span>:0,<span style="color:#e8a045">"sms"</span>:0}}[threat]
+
+    <span style="color:#7dde9f">if</span> gpio[<span style="color:#e8a045">"sms"</span>]:
+        twilio.messages.create(
+            body=f<span style="color:#e8a045">"⚠️ {animal.upper()} detected — {threat} THREAT!"</span>,
+            from_=TWILIO_NUMBER, to=FARMER_NUMBER)
+
+    <span style="color:#7dde9f">return</span> {<span style="color:#e8a045">"animal"</span>: animal, <span style="color:#e8a045">"threat_level"</span>: threat,
+            <span style="color:#e8a045">"confidence"</span>: round(confidence*100),
+            <span style="color:#e8a045">"gpio_commands"</span>: gpio}</pre>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+async function tryAPI() {
+  document.getElementById('api-live-resp').textContent = 'Calling /api/detect...';
+  const res = await fetch('/api/detect', { method: 'POST' });
+  const data = await res.json();
+  document.getElementById('api-live-resp').textContent = JSON.stringify(data, null, 2);
+  showToast(`API response: ${data.animal} — ${data.threat_level}`, '🔗');
+}
+</script>
+{% endblock %}

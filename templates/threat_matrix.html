@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+{% block title %}Threat Matrix{% endblock %}
+
+{% block content %}
+<div class="page">
+  <div class="page-header">
+    <h1 data-en="Threat-Level Escalation Matrix" data-kn="ಅಪಾಯ ಮಟ್ಟ ಏರಿಕೆ ಮ್ಯಾಟ್ರಿಕ್ಸ್">Threat-Level Escalation Matrix</h1>
+    <p class="sub" data-en="Defines what automated response is triggered for each detected animal species" data-kn="ಪ್ರತಿ ಪ್ರಾಣಿ ಪ್ರಭೇದಕ್ಕೆ ಯಾವ ಸ್ವಯಂಚಾಲಿತ ಪ್ರತಿಕ್ರಿಯೆ ಪ್ರಚೋದಿಸಲ್ಪಡುತ್ತದೆ ಎಂದು ವ್ಯಾಖ್ಯಾನಿಸುತ್ತದೆ">Defines what automated response is triggered for each detected animal species</p>
+  </div>
+
+  <!-- Legend -->
+  <div style="display:flex;gap:0.75rem;flex-wrap:wrap;margin-bottom:1.25rem;">
+    <div style="display:flex;align-items:center;gap:0.4rem;font-size:0.78rem;">
+      <span class="badge HIGH" style="padding:.15rem .5rem">HIGH</span>
+      <span data-en="= Full response: Alarm + Strobe + SMS + Authorities" data-kn="= ಪೂರ್ಣ ಪ್ರತಿಕ್ರಿಯೆ: ಅಲಾರಂ + ಸ್ಟ್ರೋಬ್ + SMS + ಅಧಿಕಾರಿಗಳು">= Full response: Alarm + Strobe + SMS + Authorities</span>
+    </div>
+    <div style="display:flex;align-items:center;gap:0.4rem;font-size:0.78rem;">
+      <span class="badge MEDIUM" style="padding:.15rem .5rem">MEDIUM</span>
+      <span data-en="= Deterrent + SMS to farmer" data-kn="= ತಡೆ + ರೈತರಿಗೆ SMS">= Deterrent + SMS to farmer</span>
+    </div>
+    <div style="display:flex;align-items:center;gap:0.4rem;font-size:0.78rem;">
+      <span class="badge LOW" style="padding:.15rem .5rem">LOW</span>
+      <span data-en="= Log only, no alert" data-kn="= ದಾಖಲಿಸಿ, ಎಚ್ಚರಿಕೆ ಇಲ್ಲ">= Log only, no alert</span>
+    </div>
+  </div>
+
+  <div class="card">
+    <table>
+      <thead>
+        <tr>
+          <th data-en="Animal" data-kn="ಪ್ರಾಣಿ">Animal</th>
+          <th data-en="Kannada Name" data-kn="ಕನ್ನಡ ಹೆಸರು">Kannada Name</th>
+          <th data-en="Threat Level" data-kn="ಅಪಾಯ ಮಟ್ಟ">Threat Level</th>
+          <th data-en="SMS Alert" data-kn="SMS ಎಚ್ಚರಿಕೆ">SMS Alert</th>
+          <th data-en="Buzzer" data-kn="ಬಜರ್">Buzzer</th>
+          <th data-en="Strobe Light" data-kn="ಸ್ಟ್ರೋಬ್ ದೀಪ">Strobe Light</th>
+          <th data-en="Response Protocol" data-kn="ಪ್ರತಿಕ್ರಿಯೆ ಪ್ರೋಟೋಕಾಲ್">Response Protocol</th>
+        </tr>
+      </thead>
+      <tbody>
+      {% for row in matrix %}
+      <tr style="{% if row.threat == 'HIGH' %}background:#fff8f7;{% elif row.threat == 'MEDIUM' %}background:#fffdf0;{% endif %}">
+        <td style="font-weight:700;font-size:0.9rem;">
+          {% if row.animal == 'Elephant' %}🐘{% elif row.animal == 'Gaur' %}🐂{% elif row.animal == 'Leopard' %}🐆{% elif row.animal == 'Wild Boar' %}🐗{% elif row.animal == 'Deer' %}🦌{% else %}🐒{% endif %}
+          <span data-en="{{ row.animal }}" data-kn="{{ row.kn }}"> {{ row.animal }}</span>
+        </td>
+        <td style="font-family:var(--kn);font-size:0.9rem;color:var(--forest);">{{ row.kn }}</td>
+        <td><span class="badge {{ row.threat }}" data-en="{{ row.threat }}" data-kn="{{ 'ಅಧಿಕ' if row.threat=='HIGH' else ('ಮಧ್ಯಮ' if row.threat=='MEDIUM' else 'ಕಡಿಮೆ') }}">{{ row.threat }}</span></td>
+        <td style="font-size:0.82rem;">{{ row.sms }}</td>
+        <td style="font-size:0.82rem;">{{ row.buzzer }}</td>
+        <td style="font-size:0.82rem;">{{ row.light }}</td>
+        <td style="font-size:0.82rem;font-weight:600;color:{{ 'var(--danger)' if row.threat=='HIGH' else ('var(--amber)' if row.threat=='MEDIUM' else 'var(--safe)') }};">{{ row.response }}</td>
+      </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Training note -->
+  <div class="card" style="margin-top:1.25rem;border-left:3px solid var(--leaf);">
+    <div class="card-title" data-en="Model Training — How the ESP32 Learns Animals" data-kn="ಮಾಡೆಲ್ ತರಬೇತಿ — ESP32 ಪ್ರಾಣಿಗಳನ್ನು ಹೇಗೆ ಕಲಿಯುತ್ತದೆ">Model Training — How the ESP32 Learns Animals</div>
+    <div style="margin-top:0.75rem;display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1rem;">
+      <div style="display:flex;gap:0.75rem;align-items:flex-start;">
+        <span style="font-size:1.4rem;">1️⃣</span>
+        <div>
+          <div style="font-weight:700;font-size:0.82rem;margin-bottom:0.2rem;" data-en="Collect Images" data-kn="ಚಿತ್ರಗಳನ್ನು ಸಂಗ್ರಹಿಸಿ">Collect Images</div>
+          <div style="font-size:0.78rem;color:#6a8a75;" data-en="200–500 images per species from field cameras and public datasets" data-kn="ಕ್ಷೇತ್ರ ಕ್ಯಾಮೆರಾ ಮತ್ತು ಸಾರ್ವಜನಿಕ ಡೇಟಾಸೆಟ್‌ಗಳಿಂದ ಪ್ರತಿ ಪ್ರಭೇದಕ್ಕೆ 200–500 ಚಿತ್ರಗಳು">200–500 images per species from field cameras and public datasets</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:0.75rem;align-items:flex-start;">
+        <span style="font-size:1.4rem;">2️⃣</span>
+        <div>
+          <div style="font-weight:700;font-size:0.82rem;margin-bottom:0.2rem;" data-en="Label & Annotate" data-kn="ಲೇಬಲ್ ಮಾಡಿ ಮತ್ತು ಗುರುತಿಸಿ">Label & Annotate</div>
+          <div style="font-size:0.78rem;color:#6a8a75;" data-en="Draw bounding boxes using Roboflow / CVAT, export YOLO format" data-kn="Roboflow / CVAT ಬಳಸಿ ಬೌಂಡಿಂಗ್ ಬಾಕ್ಸ್ ಎಳೆಯಿರಿ, YOLO ಫಾರ್ಮ್ಯಾಟ್‌ನಲ್ಲಿ ರಫ್ತು ಮಾಡಿ">Draw bounding boxes using Roboflow / CVAT, export YOLO format</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:0.75rem;align-items:flex-start;">
+        <span style="font-size:1.4rem;">3️⃣</span>
+        <div>
+          <div style="font-weight:700;font-size:0.82rem;margin-bottom:0.2rem;" data-en="Train YOLOv8" data-kn="YOLOv8 ತರಬೇತಿ">Train YOLOv8</div>
+          <div style="font-size:0.78rem;color:#6a8a75;" data-en="Fine-tune on Google Colab GPU, export weights to cloud server" data-kn="Google Colab GPU ಮೇಲೆ ಫೈನ್-ಟ್ಯೂನ್ ಮಾಡಿ, ಕ್ಲೌಡ್ ಸರ್ವರ್‌ಗೆ ವೆಯ್ಟ್ ರಫ್ತು ಮಾಡಿ">Fine-tune on Google Colab GPU, export weights to cloud server</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:0.75rem;align-items:flex-start;">
+        <span style="font-size:1.4rem;">4️⃣</span>
+        <div>
+          <div style="font-weight:700;font-size:0.82rem;margin-bottom:0.2rem;" data-en="Deploy & Classify" data-kn="ನಿಯೋಜಿಸಿ ಮತ್ತು ವರ್ಗೀಕರಿಸಿ">Deploy & Classify</div>
+          <div style="font-size:0.78rem;color:#6a8a75;" data-en="Server runs inference; result mapped to threat matrix for response" data-kn="ಸರ್ವರ್ ಇನ್ಫರೆನ್ಸ್ ಚಲಾಯಿಸುತ್ತದೆ; ಫಲಿತಾಂಶವನ್ನು ಅಪಾಯ ಮ್ಯಾಟ್ರಿಕ್ಸ್‌ಗೆ ಮ್ಯಾಪ್ ಮಾಡಲಾಗುತ್ತದೆ">Server runs inference; result mapped to threat matrix for response</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

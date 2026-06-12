@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+{% block title %}Detections{% endblock %}
+
+{% block content %}
+<div class="page">
+  <div class="page-header" style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:1rem;">
+    <div>
+      <h1 data-en="Detection Log" data-kn="ಪತ್ತೆ ದಾಖಲೆ">Detection Log</h1>
+      <p class="sub" data-en="All animal detections processed by the YOLOv8 cloud inference engine" data-kn="YOLOv8 ಕ್ಲೌಡ್ ಇಂಜಿನ್ ಮೂಲಕ ಸಂಸ್ಕರಿಸಿದ ಎಲ್ಲಾ ಪ್ರಾಣಿ ಪತ್ತೆ">All animal detections processed by the YOLOv8 cloud inference engine</p>
+    </div>
+    <div style="display:flex;gap:0.5rem;align-items:center;">
+      <select id="filter-threat" onchange="filterTable()" style="padding:0.4rem 0.7rem;border:1px solid var(--border);border-radius:7px;font-family:var(--sans);font-size:0.8rem;color:var(--forest);background:white;cursor:pointer;">
+        <option value="">All Threats</option>
+        <option value="HIGH">HIGH</option>
+        <option value="MEDIUM">MEDIUM</option>
+        <option value="LOW">LOW</option>
+      </select>
+      <button class="btn-sim" onclick="simulateAndAdd()">▶ <span data-en="Simulate" data-kn="ಅನುಕರಣೆ">Simulate</span></button>
+    </div>
+  </div>
+
+  <div class="card">
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th data-en="Animal" data-kn="ಪ್ರಾಣಿ">Animal</th>
+          <th data-en="Threat Level" data-kn="ಅಪಾಯ ಮಟ್ಟ">Threat Level</th>
+          <th data-en="Confidence" data-kn="ಖಚಿತತೆ">Confidence</th>
+          <th data-en="Location" data-kn="ಸ್ಥಳ">Location</th>
+          <th data-en="SMS Sent" data-kn="SMS ಕಳುಹಿಸಿದ">SMS Sent</th>
+          <th data-en="Timestamp" data-kn="ಸಮಯ">Timestamp</th>
+        </tr>
+      </thead>
+      <tbody id="det-tbody">
+      {% for d in detections %}
+      <tr data-threat="{{ d.threat }}">
+        <td style="font-family:var(--mono);font-size:0.72rem;color:#aaa;">{{ d.id }}</td>
+        <td>
+          <span style="font-size:1.2rem;margin-right:0.4rem;">{{ d.emoji }}</span>
+          <strong data-en="{{ d.animal }}" data-kn="{{ d.animal_kn }}">{{ d.animal }}</strong>
+        </td>
+        <td><span class="badge {{ d.threat }}" data-en="{{ d.threat }}" data-kn="{{ 'ಅಧಿಕ' if d.threat=='HIGH' else ('ಮಧ್ಯಮ' if d.threat=='MEDIUM' else 'ಕಡಿಮೆ') }}">{{ d.threat }}</span></td>
+        <td style="min-width:120px;">
+          <div style="display:flex;align-items:center;gap:0.5rem;">
+            <span style="font-family:var(--mono);font-size:0.8rem;font-weight:600;">{{ d.confidence }}%</span>
+            <div class="conf-bar" style="flex:1"><div class="conf-fill" style="width:{{ d.confidence }}%"></div></div>
+          </div>
+        </td>
+        <td style="font-size:0.8rem;" data-en="{{ d.location }}" data-kn="{{ d.location }}">{{ d.location }}</td>
+        <td>
+          {% if d.sms_sent %}
+            <span style="color:var(--safe);font-weight:700;" data-en="✅ Sent" data-kn="✅ ಕಳುಹಿಸಿದ">✅ Sent</span>
+          {% else %}
+            <span style="color:#b0c0b8;font-size:0.8rem;" data-en="— Logged" data-kn="— ದಾಖಲಿಸಿದ">— Logged</span>
+          {% endif %}
+        </td>
+        <td style="font-family:var(--mono);font-size:0.72rem;color:#7a9a85;">{{ d.timestamp }}</td>
+      </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function filterTable() {
+  const val = document.getElementById('filter-threat').value;
+  document.querySelectorAll('#det-tbody tr').forEach(tr => {
+    tr.style.display = (!val || tr.dataset.threat === val) ? '' : 'none';
+  });
+}
+
+async function simulateAndAdd() {
+  const res = await fetch('/api/simulate');
+  const d = await res.json();
+  const lang = document.documentElement.getAttribute('data-lang');
+  const name = lang==='kn' ? d.animal_kn : d.animal;
+  const threatKn = d.threat==='HIGH' ? 'ಅಧಿಕ' : (d.threat==='MEDIUM' ? 'ಮಧ್ಯಮ' : 'ಕಡಿಮೆ');
+  showToast(`${d.emoji} ${name} — ${d.threat} (${d.confidence}%)`);
+  const tbody = document.getElementById('det-tbody');
+  const tr = document.createElement('tr');
+  tr.setAttribute('data-threat', d.threat);
+  tr.style.background = '#f0faf4';
+  tr.innerHTML = `
+    <td style="font-family:var(--mono);font-size:.72rem;color:#aaa;">NEW</td>
+    <td><span style="font-size:1.2rem;margin-right:.4rem">${d.emoji}</span><strong data-en="${d.animal}" data-kn="${d.animal_kn}">${name}</strong></td>
+    <td><span class="badge ${d.threat}" data-en="${d.threat}" data-kn="${threatKn}">${d.threat}</span></td>
+    <td style="min-width:120px">
+      <div style="display:flex;align-items:center;gap:.5rem">
+        <span style="font-family:var(--mono);font-size:.8rem;font-weight:600">${d.confidence}%</span>
+        <div class="conf-bar" style="flex:1"><div class="conf-fill" style="width:${d.confidence}%"></div></div>
+      </div>
+    </td>
+    <td style="font-size:.8rem">${d.location}</td>
+    <td>${d.sms_sent ? '<span style="color:var(--safe);font-weight:700">✅ Sent</span>' : '<span style="color:#b0c0b8;font-size:.8rem">— Logged</span>'}</td>
+    <td style="font-family:var(--mono);font-size:.72rem;color:#7a9a85">${d.timestamp}</td>
+  `;
+  tbody.prepend(tr);
+  setTimeout(()=>tr.style.background='', 1500);
+}
+</script>
+{% endblock %}
